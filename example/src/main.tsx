@@ -1,0 +1,18 @@
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { HeroUIProvider } from '@heroui/react';
+import App from './App';
+import './styles.css';
+import 'instaskeleton/styles.css';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <HeroUIProvider>
+      <App />
+    </HeroUIProvider>
+  </React.StrictMode>
+);
+
+window.requestAnimationFrame(() => {
+  document.getElementById('page-loader')?.classList.add('is-hidden');
+});

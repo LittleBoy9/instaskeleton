@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="instaskeleton showcase: an animated, high-contrast landing page for a zero-DOM-scan React skeleton loader."
+    />
+    <meta name="theme-color" content="#060816" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <title>instaskeleton | animated showcase</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+      :root {
+        color-scheme: light;
+        --page-bg: #050816;
+        --text-main: #edf3ff;
+        --text-soft: rgba(237, 243, 255, 0.66);
+        --line: rgba(255, 255, 255, 0.1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        min-height: 100%;
+        background:
+          radial-gradient(circle at 20% 15%, rgba(53, 120, 255, 0.34), transparent 24%),
+          radial-gradient(circle at 80% 22%, rgba(255, 122, 61, 0.22), transparent 20%),
+          radial-gradient(circle at 50% 80%, rgba(61, 222, 185, 0.14), transparent 24%),
+          var(--page-bg);
+        scroll-behavior: smooth;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        overflow-x: hidden;
+        background: transparent;
+        color: var(--text-main);
+        font-family: "Space Grotesk", sans-serif;
+      }
+
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      body::before {
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+        background-size: 50px 50px;
+        mask-image: radial-gradient(circle at center, black 42%, transparent 90%);
+        opacity: 0.42;
+        transform: perspective(1200px) rotateX(74deg) translateY(38%);
+        transform-origin: center;
+      }
+
+      body::after {
+        background:
+          radial-gradient(circle at center, rgba(119, 147, 255, 0.2), transparent 38%),
+          radial-gradient(circle at center, rgba(255, 255, 255, 0.07), transparent 58%);
+        filter: blur(46px);
+        animation: halo-drift 16s ease-in-out infinite alternate;
+      }
+
+      .landing-stage {
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      .landing-orb,
+      .landing-ribbon,
+      .landing-ring {
+        position: absolute;
+        border-radius: 999px;
+        transform-style: preserve-3d;
+        will-change: transform, opacity;
+      }
+
+      .landing-orb {
+        filter: blur(14px);
+        opacity: 0.7;
+        mix-blend-mode: screen;
+        animation: orb-float 16s ease-in-out infinite;
+      }
+
+      .landing-orb.orb-a {
+        left: -8rem;
+        top: 4rem;
+        width: 20rem;
+        height: 20rem;
+        background: radial-gradient(circle, rgba(77, 132, 255, 0.8), rgba(77, 132, 255, 0.08) 72%, transparent);
+      }
+
+      .landing-orb.orb-b {
+        right: -6rem;
+        top: 18%;
+        width: 16rem;
+        height: 16rem;
+        background: radial-gradient(circle, rgba(255, 151, 77, 0.7), rgba(255, 151, 77, 0.08) 72%, transparent);
+        animation-delay: -5s;
+      }
+
+      .landing-orb.orb-c {
+        left: 35%;
+        bottom: -4rem;
+        width: 18rem;
+        height: 18rem;
+        background: radial-gradient(circle, rgba(28, 219, 196, 0.6), rgba(28, 219, 196, 0.08) 72%, transparent);
+        animation-delay: -9s;
+      }
+
+      .landing-ribbon {
+        inset: auto;
+        width: 46rem;
+        height: 12rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.02));
+        box-shadow: 0 0 100px rgba(97, 127, 255, 0.18);
+        opacity: 0.34;
+      }
+
+      .landing-ribbon.ribbon-a {
+        top: 10%;
+        left: -10rem;
+        transform: rotate(-18deg) translateZ(0);
+        animation: ribbon-sway 18s ease-in-out infinite;
+      }
+
+      .landing-ribbon.ribbon-b {
+        right: -14rem;
+        bottom: 18%;
+        transform: rotate(22deg) translateZ(0);
+        animation: ribbon-sway 21s ease-in-out infinite reverse;
+      }
+
+      .landing-ring {
+        left: 50%;
+        top: 50%;
+        width: 42rem;
+        height: 42rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transform: translate(-50%, -50%);
+        opacity: 0.24;
+        animation: spin-ring 32s linear infinite;
+      }
+
+      .landing-ring.ring-inner {
+        width: 28rem;
+        height: 28rem;
+        border-style: dashed;
+        animation-direction: reverse;
+        animation-duration: 24s;
+      }
+
+      .page-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 5;
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(circle at 30% 20%, rgba(84, 126, 255, 0.18), transparent 26%),
+          radial-gradient(circle at 70% 70%, rgba(255, 157, 73, 0.12), transparent 24%),
+          rgba(5, 8, 22, 0.92);
+        backdrop-filter: blur(24px);
+        transition: opacity 560ms ease, visibility 560ms ease;
+      }
+
+      .page-loader.is-hidden {
+        opacity: 0;
+        visibility: hidden;
+      }
+
+      .loader-card {
+        width: min(34rem, calc(100vw - 2rem));
+        padding: 1.4rem;
+        border-radius: 1.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+        box-shadow:
+          0 30px 90px rgba(0, 0, 0, 0.4),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      }
+
+      .loader-eyebrow {
+        font-size: 0.74rem;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: rgba(237, 243, 255, 0.6);
+      }
+
+      .loader-title {
+        margin: 0.8rem 0 0.45rem;
+        font-family: "Sora", sans-serif;
+        font-size: clamp(1.8rem, 5vw, 3.4rem);
+        font-weight: 800;
+        line-height: 0.95;
+      }
+
+      .loader-copy {
+        margin: 0 0 1.2rem;
+        max-width: 30rem;
+        color: var(--text-soft);
+        line-height: 1.6;
+      }
+
+      .loader-track {
+        position: relative;
+        height: 0.7rem;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .loader-bar {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 38%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #4b7fff, #90d8ff, #ffb36b);
+        box-shadow: 0 0 28px rgba(75, 127, 255, 0.6);
+        animation: loader-scan 1.45s ease-in-out infinite;
+      }
+
+      .loader-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-top: 0.75rem;
+        color: rgba(237, 243, 255, 0.58);
+        font-size: 0.88rem;
+      }
+
+      #root {
+        position: relative;
+        z-index: 2;
+      }
+
+      @keyframes orb-float {
+        0% {
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+        50% {
+          transform: translate3d(3rem, -2rem, 0) scale(1.08);
+        }
+        100% {
+          transform: translate3d(-2rem, 2rem, 0) scale(0.96);
+        }
+      }
+
+      @keyframes ribbon-sway {
+        0% {
+          transform: rotate(-18deg) translate3d(0, 0, 0);
+        }
+        50% {
+          transform: rotate(-12deg) translate3d(3rem, -1rem, 0);
+        }
+        100% {
+          transform: rotate(-20deg) translate3d(-2rem, 2rem, 0);
+        }
+      }
+
+      @keyframes spin-ring {
+        to {
+          transform: translate(-50%, -50%) rotate(360deg);
+        }
+      }
+
+      @keyframes halo-drift {
+        0% {
+          transform: scale(1) translate3d(0, 0, 0);
+        }
+        100% {
+          transform: scale(1.08) translate3d(0, -2%, 0);
+        }
+      }
+
+      @keyframes loader-scan {
+        0% {
+          transform: translateX(-105%);
+        }
+        100% {
+          transform: translateX(320%);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        body::after,
+        .landing-orb,
+        .landing-ribbon,
+        .landing-ring,
+        .loader-bar {
+          animation: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="landing-stage" aria-hidden="true">
+      <div class="landing-orb orb-a"></div>
+      <div class="landing-orb orb-b"></div>
+      <div class="landing-orb orb-c"></div>
+      <div class="landing-ribbon ribbon-a"></div>
+      <div class="landing-ribbon ribbon-b"></div>
+      <div class="landing-ring"></div>
+      <div class="landing-ring ring-inner"></div>
+    </div>
+    <div class="page-loader" id="page-loader">
+      <div class="loader-card">
+        <div class="loader-eyebrow">instaskeleton showcase</div>
+        <h1 class="loader-title">Loading a dramatic skeleton stage.</h1>
+        <p class="loader-copy">
+          Zero DOM scanning, high-contrast motion, layered depth, and a landing shell that feels more like a product reveal than a demo stub.
+        </p>
+        <div class="loader-track">
+          <div class="loader-bar"></div>
+        </div>
+        <div class="loader-meta">
+          <span>react + vite</span>
+          <span>3D ambient shell</span>
+          <span>motion-safe</span>
+        </div>
+      </div>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

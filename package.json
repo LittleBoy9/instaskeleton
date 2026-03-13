@@ -1,0 +1,48 @@
+{
+  "name": "instaskeleton",
+  "version": "0.1.0",
+  "description": "Ultra-light React skeleton generator with zero DOM scanning",
+  "license": "MIT",
+  "author": "",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./styles.css": "./dist/index.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "example:install": "npm --prefix example install",
+    "example:dev": "npm run build && npm --prefix example run dev",
+    "example:build": "npm run build && npm --prefix example run build"
+  },
+  "keywords": [
+    "skeleton",
+    "react",
+    "loading",
+    "placeholder",
+    "ui"
+  ],
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "tsup": "^8.1.0",
+    "typescript": "^5.6.0"
+  }
+}

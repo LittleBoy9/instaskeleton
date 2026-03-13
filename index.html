@@ -1,0 +1,884 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="instaskeleton: a dramatic standalone landing page for a zero-DOM-scan React skeleton loader."
+    />
+    <meta name="theme-color" content="#050816" />
+    <title>instaskeleton | Zero DOM Scan Skeletons</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #050816;
+        --panel: rgba(10, 16, 33, 0.62);
+        --panel-strong: rgba(14, 20, 44, 0.84);
+        --line: rgba(255, 255, 255, 0.1);
+        --text: #f3f7ff;
+        --muted: rgba(243, 247, 255, 0.68);
+        --blue: #5f84ff;
+        --cyan: #88e7ff;
+        --orange: #ff9b54;
+        --mint: #52f2c7;
+        --shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--text);
+        font-family: "Space Grotesk", sans-serif;
+        background:
+          radial-gradient(circle at 15% 20%, rgba(82, 128, 255, 0.34), transparent 20%),
+          radial-gradient(circle at 84% 14%, rgba(255, 157, 84, 0.2), transparent 18%),
+          radial-gradient(circle at 50% 75%, rgba(82, 242, 199, 0.14), transparent 22%),
+          linear-gradient(180deg, #050816 0%, #091022 38%, #060911 100%);
+        overflow-x: hidden;
+      }
+
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      body::before {
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+        background-size: 54px 54px;
+        opacity: 0.36;
+        mask-image: radial-gradient(circle at center, black 30%, transparent 88%);
+        transform: perspective(1400px) rotateX(76deg) translateY(40%);
+        transform-origin: center;
+      }
+
+      body::after {
+        background:
+          radial-gradient(circle at center, rgba(99, 126, 255, 0.18), transparent 28%),
+          radial-gradient(circle at center, rgba(255, 255, 255, 0.06), transparent 52%);
+        filter: blur(48px);
+        animation: background-drift 16s ease-in-out infinite alternate;
+      }
+
+      .scene {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .orb,
+      .ring,
+      .beam {
+        position: absolute;
+        border-radius: 999px;
+      }
+
+      .orb {
+        filter: blur(16px);
+        mix-blend-mode: screen;
+        opacity: 0.72;
+        animation: orb-float 18s ease-in-out infinite;
+      }
+
+      .orb.a {
+        left: -7rem;
+        top: 5rem;
+        width: 22rem;
+        height: 22rem;
+        background: radial-gradient(circle, rgba(95, 132, 255, 0.8), rgba(95, 132, 255, 0.08) 72%, transparent);
+      }
+
+      .orb.b {
+        right: -6rem;
+        top: 18%;
+        width: 18rem;
+        height: 18rem;
+        background: radial-gradient(circle, rgba(255, 155, 84, 0.75), rgba(255, 155, 84, 0.08) 72%, transparent);
+        animation-delay: -6s;
+      }
+
+      .orb.c {
+        left: 30%;
+        bottom: -5rem;
+        width: 20rem;
+        height: 20rem;
+        background: radial-gradient(circle, rgba(82, 242, 199, 0.6), rgba(82, 242, 199, 0.08) 72%, transparent);
+        animation-delay: -10s;
+      }
+
+      .ring {
+        left: 50%;
+        top: 30rem;
+        width: 42rem;
+        height: 42rem;
+        transform: translateX(-50%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        opacity: 0.25;
+        animation: spin 32s linear infinite;
+      }
+
+      .ring.inner {
+        width: 28rem;
+        height: 28rem;
+        border-style: dashed;
+        animation-duration: 24s;
+        animation-direction: reverse;
+      }
+
+      .beam {
+        width: 44rem;
+        height: 10rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+        box-shadow: 0 0 80px rgba(95, 132, 255, 0.18);
+        opacity: 0.28;
+      }
+
+      .beam.a {
+        left: -10rem;
+        top: 9rem;
+        transform: rotate(-18deg);
+        animation: sway-a 20s ease-in-out infinite;
+      }
+
+      .beam.b {
+        right: -12rem;
+        top: 38rem;
+        transform: rotate(22deg);
+        animation: sway-b 22s ease-in-out infinite;
+      }
+
+      .wrap {
+        position: relative;
+        z-index: 1;
+        width: min(1200px, calc(100vw - 32px));
+        margin: 0 auto;
+      }
+
+      .nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 24px 0;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--text);
+        text-decoration: none;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+
+      .brand-mark {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        position: relative;
+        background:
+          linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.05)),
+          linear-gradient(135deg, rgba(95, 132, 255, 0.8), rgba(136, 231, 255, 0.5));
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.2),
+          0 10px 24px rgba(95, 132, 255, 0.35);
+      }
+
+      .brand-mark::before,
+      .brand-mark::after {
+        content: "";
+        position: absolute;
+        left: 9px;
+        right: 9px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.88);
+      }
+
+      .brand-mark::before {
+        top: 11px;
+        height: 8px;
+      }
+
+      .brand-mark::after {
+        top: 24px;
+        width: 60%;
+        height: 6px;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .pill,
+      .ghost {
+        text-decoration: none;
+        border-radius: 999px;
+        padding: 12px 18px;
+        font-weight: 600;
+        transition: transform 220ms ease, background 220ms ease, border-color 220ms ease;
+      }
+
+      .ghost {
+        color: var(--text);
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .pill {
+        color: #07101f;
+        background: linear-gradient(135deg, #f4f7ff, #9ddfff 58%, #ffc187);
+        box-shadow: 0 12px 30px rgba(136, 231, 255, 0.2);
+      }
+
+      .ghost:hover,
+      .pill:hover,
+      .card:hover,
+      .feature:hover,
+      .showcase:hover {
+        transform: translateY(-2px);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 28px;
+        align-items: center;
+        min-height: calc(100vh - 90px);
+        padding: 24px 0 80px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(243, 247, 255, 0.78);
+        font-size: 0.76rem;
+        text-transform: uppercase;
+        letter-spacing: 0.22em;
+      }
+
+      h1,
+      h2,
+      h3 {
+        font-family: "Sora", sans-serif;
+        margin: 0;
+      }
+
+      .hero h1 {
+        margin-top: 18px;
+        font-size: clamp(3rem, 7vw, 6.6rem);
+        line-height: 0.95;
+        letter-spacing: -0.06em;
+      }
+
+      .gradient-text {
+        background: linear-gradient(135deg, #ffffff 8%, #8cdfff 45%, #ffc08a 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .hero-copy {
+        margin-top: 18px;
+        max-width: 42rem;
+        font-size: 1.06rem;
+        line-height: 1.8;
+        color: var(--muted);
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-top: 28px;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 28px;
+      }
+
+      .card,
+      .panel,
+      .feature,
+      .showcase {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+          var(--panel);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(18px);
+      }
+
+      .card {
+        padding: 18px;
+        border-radius: 24px;
+      }
+
+      .card .label {
+        color: rgba(243, 247, 255, 0.62);
+        font-size: 0.84rem;
+      }
+
+      .card strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 2rem;
+        font-family: "Sora", sans-serif;
+      }
+
+      .hero-visual {
+        position: relative;
+        min-height: 680px;
+        perspective: 1600px;
+      }
+
+      .showcase {
+        position: absolute;
+        border-radius: 28px;
+        transition: transform 260ms ease;
+      }
+
+      .showcase.main {
+        inset: 60px 0 40px 50px;
+        padding: 28px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)),
+          rgba(10, 17, 35, 0.82);
+        transform: rotateY(-12deg) rotateX(9deg);
+      }
+
+      .showcase.float-a {
+        top: 0;
+        left: 0;
+        width: 230px;
+        padding: 18px;
+        transform: translateZ(60px) rotate(-10deg);
+      }
+
+      .showcase.float-b {
+        right: 6px;
+        bottom: 0;
+        width: 260px;
+        padding: 18px;
+        transform: translateZ(70px) rotate(8deg);
+      }
+
+      .window-bar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 18px;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .screen {
+        display: grid;
+        gap: 14px;
+      }
+
+      .screen-row {
+        display: grid;
+        grid-template-columns: 78px 1fr;
+        gap: 14px;
+        align-items: center;
+      }
+
+      .s-circle,
+      .s-line,
+      .s-rect {
+        position: relative;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .s-circle::after,
+      .s-line::after,
+      .s-rect::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+        transform: translateX(-100%);
+        animation: shimmer 1.5s linear infinite;
+      }
+
+      .s-circle {
+        width: 78px;
+        height: 78px;
+        border-radius: 999px;
+      }
+
+      .stack {
+        display: grid;
+        gap: 10px;
+      }
+
+      .s-line {
+        height: 13px;
+        border-radius: 999px;
+      }
+
+      .s-rect {
+        height: 140px;
+        border-radius: 22px;
+      }
+
+      .w-90 { width: 90%; }
+      .w-74 { width: 74%; }
+      .w-58 { width: 58%; }
+      .w-46 { width: 46%; }
+
+      .section {
+        padding: 100px 0;
+      }
+
+      .section-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        align-items: end;
+        margin-bottom: 32px;
+      }
+
+      .section-head p {
+        max-width: 42rem;
+        color: var(--muted);
+        line-height: 1.8;
+      }
+
+      .features,
+      .stack-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .feature {
+        border-radius: 24px;
+        padding: 22px;
+        transition: transform 220ms ease;
+      }
+
+      .feature-index {
+        display: inline-flex;
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.08);
+        color: rgba(243, 247, 255, 0.76);
+        font-size: 0.84rem;
+        margin-bottom: 16px;
+      }
+
+      .feature p {
+        color: var(--muted);
+        line-height: 1.75;
+      }
+
+      .stack-grid {
+        grid-template-columns: 1.1fr 0.9fr;
+      }
+
+      .panel {
+        border-radius: 28px;
+        padding: 26px;
+      }
+
+      .code {
+        margin-top: 18px;
+        border-radius: 20px;
+        padding: 18px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        overflow: auto;
+        color: #c9ebff;
+        font-size: 0.95rem;
+      }
+
+      .mini-grid {
+        display: grid;
+        gap: 14px;
+      }
+
+      .mini-card {
+        padding: 18px;
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .mini-card strong {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 1.02rem;
+      }
+
+      .footer {
+        padding: 0 0 56px;
+      }
+
+      .footer-panel {
+        border-radius: 30px;
+        padding: 28px;
+        text-align: center;
+        background:
+          radial-gradient(circle at top, rgba(95, 132, 255, 0.14), transparent 44%),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+          var(--panel-strong);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: var(--shadow);
+      }
+
+      .footer-panel p {
+        color: var(--muted);
+        max-width: 36rem;
+        margin: 14px auto 24px;
+        line-height: 1.8;
+      }
+
+      @keyframes shimmer {
+        100% {
+          transform: translateX(100%);
+        }
+      }
+
+      @keyframes spin {
+        to {
+          transform: translateX(-50%) rotate(360deg);
+        }
+      }
+
+      @keyframes orb-float {
+        0% { transform: translate3d(0, 0, 0) scale(1); }
+        50% { transform: translate3d(2rem, -2rem, 0) scale(1.08); }
+        100% { transform: translate3d(-2rem, 2rem, 0) scale(0.95); }
+      }
+
+      @keyframes sway-a {
+        0% { transform: rotate(-18deg) translate3d(0, 0, 0); }
+        50% { transform: rotate(-12deg) translate3d(3rem, -1rem, 0); }
+        100% { transform: rotate(-20deg) translate3d(-2rem, 2rem, 0); }
+      }
+
+      @keyframes sway-b {
+        0% { transform: rotate(22deg) translate3d(0, 0, 0); }
+        50% { transform: rotate(16deg) translate3d(-3rem, 1rem, 0); }
+        100% { transform: rotate(24deg) translate3d(2rem, -1rem, 0); }
+      }
+
+      @keyframes background-drift {
+        0% { transform: scale(1) translateY(0); }
+        100% { transform: scale(1.08) translateY(-2%); }
+      }
+
+      @media (max-width: 1100px) {
+        .hero,
+        .stack-grid,
+        .features {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-visual {
+          min-height: 560px;
+        }
+
+        .showcase.main {
+          inset: 70px 0 80px 0;
+          transform: none;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .nav {
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .nav-links,
+        .hero-actions,
+        .stats {
+          width: 100%;
+        }
+
+        .stats {
+          grid-template-columns: 1fr;
+        }
+
+        .hero {
+          min-height: auto;
+          padding-bottom: 40px;
+        }
+
+        .hero-visual {
+          min-height: 520px;
+        }
+
+        .showcase.main,
+        .showcase.float-a,
+        .showcase.float-b {
+          position: relative;
+          inset: auto;
+          width: auto;
+          margin-bottom: 16px;
+          transform: none;
+        }
+
+        .section-head {
+          flex-direction: column;
+          align-items: start;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation: none !important;
+          transition: none !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scene" aria-hidden="true">
+      <div class="orb a"></div>
+      <div class="orb b"></div>
+      <div class="orb c"></div>
+      <div class="beam a"></div>
+      <div class="beam b"></div>
+      <div class="ring"></div>
+      <div class="ring inner"></div>
+    </div>
+
+    <div class="wrap">
+      <nav class="nav">
+        <a class="brand" href="#">
+          <span class="brand-mark"></span>
+          <span>instaskeleton</span>
+        </a>
+        <div class="nav-links">
+          <a class="ghost" href="#features">Why it wins</a>
+          <a class="ghost" href="#schema">Schema</a>
+          <a class="pill" href="./example/">Open example app</a>
+        </div>
+      </nav>
+
+      <section class="hero">
+        <div>
+          <span class="eyebrow">Zero DOM Scan Skeleton Engine</span>
+          <h1>
+            Loading states with
+            <span class="gradient-text">real structure</span>,
+            not fake filler.
+          </h1>
+          <p class="hero-copy">
+            instaskeleton is built for fast React interfaces that need skeletons to feel intentional. Infer from the JSX tree when speed matters. Switch to manual schema when the placeholder must mirror the inner component exactly.
+          </p>
+          <div class="hero-actions">
+            <a class="pill" href="./example/">See showcase</a>
+            <a class="ghost" href="README.md">Read package docs</a>
+          </div>
+          <div class="stats">
+            <div class="card">
+              <span class="label">Runtime approach</span>
+              <strong>JSX-first</strong>
+            </div>
+            <div class="card">
+              <span class="label">DOM scanning</span>
+              <strong>0</strong>
+            </div>
+            <div class="card">
+              <span class="label">Modes</span>
+              <strong>Infer + Exact</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="showcase float-a">
+            <div class="window-bar">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </div>
+            <div class="stack">
+              <div class="s-line w-74"></div>
+              <div class="s-line w-46"></div>
+              <div class="s-rect"></div>
+            </div>
+          </div>
+
+          <div class="showcase main">
+            <div class="window-bar">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </div>
+            <div class="screen">
+              <div class="screen-row">
+                <div class="s-circle"></div>
+                <div class="stack">
+                  <div class="s-line w-90"></div>
+                  <div class="s-line w-58"></div>
+                  <div class="s-line w-46"></div>
+                </div>
+              </div>
+              <div class="s-rect"></div>
+              <div class="stack">
+                <div class="s-line w-90"></div>
+                <div class="s-line w-74"></div>
+                <div class="s-line w-58"></div>
+              </div>
+              <div class="screen-row">
+                <div class="s-circle"></div>
+                <div class="stack">
+                  <div class="s-line w-74"></div>
+                  <div class="s-line w-46"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="showcase float-b">
+            <strong style="display:block;margin-bottom:14px;font-family:'Sora',sans-serif;">manual schema mirror</strong>
+            <div class="stack">
+              <div class="screen-row">
+                <div class="s-circle" style="width:52px;height:52px;"></div>
+                <div class="stack">
+                  <div class="s-line w-74"></div>
+                  <div class="s-line w-46"></div>
+                </div>
+              </div>
+              <div class="s-line w-90"></div>
+              <div class="s-line w-58"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="features">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Why it wins</span>
+            <h2 style="margin-top:16px;font-size:clamp(2rem,4vw,3.6rem);letter-spacing:-0.05em;">A loader that acts like product infrastructure, not decoration.</h2>
+          </div>
+          <p>
+            The point is not to generate random bars. The point is to preserve the rhythm of the interface while the real component is still loading.
+          </p>
+        </div>
+
+        <div class="features">
+          <article class="feature">
+            <span class="feature-index">01</span>
+            <h3>Inference from the React tree</h3>
+            <p>
+              Use `infer` when you want instant adoption. It walks JSX, not the browser DOM, so the runtime stays predictable.
+            </p>
+          </article>
+          <article class="feature">
+            <span class="feature-index">02</span>
+            <h3>Manual schema for exact shape control</h3>
+            <p>
+              Cards, chat rows, settings panels, and editorial layouts can all get placeholders that actually resemble their internals.
+            </p>
+          </article>
+          <article class="feature">
+            <span class="feature-index">03</span>
+            <h3>HOC wrappers for team-scale reuse</h3>
+            <p>
+              Preconfigure loading once, then expose a single `loading` prop to the rest of the application.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="schema">
+        <div class="stack-grid">
+          <div class="panel">
+            <span class="eyebrow">Exact mode</span>
+            <h2 style="margin-top:16px;font-size:clamp(2rem,4vw,3.4rem);letter-spacing:-0.05em;">When fidelity matters, describe the internal anatomy.</h2>
+            <p class="hero-copy" style="margin-top:16px;">
+              Manual schema is where instaskeleton gets serious. Use `circle`, `line`, `rect`, and `group` to construct a placeholder that follows the same visual grammar as the actual component.
+            </p>
+            <div class="code"><pre style="margin:0;white-space:pre-wrap;">const profileSchema = [
+  {
+    type: 'group',
+    children: [
+      { type: 'circle', width: '3rem', height: '3rem' },
+      { type: 'line', width: '48%' },
+      { type: 'line', width: '26%' }
+    ]
+  }
+];</pre></div>
+          </div>
+
+          <div class="panel">
+            <span class="eyebrow">Use cases</span>
+            <div class="mini-grid" style="margin-top:18px;">
+              <div class="mini-card">
+                <strong>Feeds and profile rows</strong>
+                Match avatar, title, metadata, and content rhythm.
+              </div>
+              <div class="mini-card">
+                <strong>Product and pricing cards</strong>
+                Keep media blocks, title width, CTA placement, and stats readable while loading.
+              </div>
+              <div class="mini-card">
+                <strong>Dense settings surfaces</strong>
+                Preserve hierarchy for forms, toggles, sections, and side panels.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div class="footer-panel">
+          <span class="eyebrow">Ship it</span>
+          <h2 style="margin-top:16px;font-size:clamp(2rem,4vw,3.2rem);letter-spacing:-0.05em;">Use the standalone landing page here, and keep the live demo in <code>example/</code>.</h2>
+          <p>
+            This root `index.html` is now the separate marketing page. The React demo is still available under `example/`, and the package docs remain in `README.md`.
+          </p>
+          <div class="hero-actions" style="justify-content:center;">
+            <a class="pill" href="./example/">Open demo app</a>
+            <a class="ghost" href="README.md">Open README</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

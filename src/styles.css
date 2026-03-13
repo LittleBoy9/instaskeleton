@@ -1,0 +1,74 @@
+.is-root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.is-node {
+  position: relative;
+  overflow: hidden;
+  background: #e6e6e6;
+  border-radius: 0.5rem;
+}
+
+.is-line {
+  height: 0.95rem;
+  width: 100%;
+  border-radius: 999px;
+}
+
+.is-rect {
+  width: 100%;
+  height: 5rem;
+}
+
+.is-circle {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+}
+
+.is-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.is-anim-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  animation: is-shimmer 1.2s linear infinite;
+}
+
+.is-anim-pulse {
+  animation: is-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes is-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes is-pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .is-anim-shimmer::after,
+  .is-anim-pulse {
+    animation: none;
+  }
+}
