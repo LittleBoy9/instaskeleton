@@ -12,7 +12,3 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </HeroUIProvider>
   </React.StrictMode>
 );
-
-window.requestAnimationFrame(() => {
-  document.getElementById('page-loader')?.classList.add('is-hidden');
-});

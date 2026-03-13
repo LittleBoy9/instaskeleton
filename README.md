@@ -1,26 +1,33 @@
 # instaskeleton
 
-React skeleton loader for teams that want fast loading states without DOM scanning.
+[![npm version](https://img.shields.io/npm/v/instaskeleton.svg)](https://www.npmjs.com/package/instaskeleton)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/instaskeleton)](https://bundlephobia.com/package/instaskeleton)
+[![license](https://img.shields.io/npm/l/instaskeleton.svg)](https://github.com/LittleBoy9/instaskeleton/blob/main/LICENSE)
 
-`instaskeleton` can do two things well:
+Ultra-light React skeleton loader with **zero DOM scanning**, **zero layout measurement**, and **zero lag**.
 
-- infer a placeholder shape from your React tree
-- render an exact manual skeleton when the inner component layout matters
+```
+~1.2 KB gzipped (JS) + ~0.45 KB (CSS) = ~1.65 KB total
+```
 
-## Why it exists
+## Why instaskeleton?
 
-Most skeleton libraries either need separate skeleton components everywhere or inspect the DOM at runtime. This package stays smaller and more predictable:
+Most skeleton libraries either:
+- Require separate skeleton components for every UI element
+- Scan the DOM at runtime to generate placeholders (slow, causes layout shifts)
 
-- no DOM walking
-- no layout measurement loop
-- simple div-based primitives
-- optional schema caching with `cacheKey`
-- three animation modes: `shimmer`, `pulse`, `none`
+**instaskeleton** takes a different approach:
+- **Zero DOM scanning** — no runtime layout measurement
+- **Zero work when not loading** — early exit skips all computation
+- **Infer from JSX** — automatic skeleton generation from your React tree
+- **Manual schema** — pixel-perfect control when you need it
+- **LRU cache** — repeated renders are instant (100-entry limit prevents memory leaks)
+- **Reduced motion support** — respects `prefers-reduced-motion`
 
 ## Install
 
 ```bash
-npm i instaskeleton
+npm install instaskeleton
 ```
 
 Import the bundled styles once:
@@ -118,71 +125,145 @@ const StatCardWithSkeleton = withInstaSkeleton(StatCard, {
 <StatCardWithSkeleton loading={isLoading} label="Downloads" value="12.4k" />;
 ```
 
-## API
+## API Reference
 
-### `InstaSkeleton`
+### `<InstaSkeleton>`
 
-- `loading: boolean`
-- `children: ReactNode`
-- `schema?: SkeletonNode | SkeletonNode[]`
-- `infer?: boolean`
-- `cacheKey?: string`
-- `className?: string`
-- `animation?: 'shimmer' | 'pulse' | 'none'`
-- `inferOptions?: { maxDepth?: number; maxNodes?: number; textLineHeight?: string | number }`
+The main component for wrapping content with skeleton loading states.
 
-### `withInstaSkeleton`
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `loading` | `boolean` | required | Show skeleton when `true`, children when `false` |
+| `children` | `ReactNode` | required | Content to display when not loading |
+| `schema` | `SkeletonNode \| SkeletonNode[]` | `undefined` | Manual skeleton definition |
+| `infer` | `boolean` | `true` | Auto-generate skeleton from children |
+| `cacheKey` | `string` | `undefined` | Cache inferred schema for reuse |
+| `className` | `string` | `undefined` | Additional CSS class for the skeleton root |
+| `animation` | `'shimmer' \| 'pulse' \| 'none'` | `'shimmer'` | Animation style |
+| `inferOptions` | `InferOptions` | `{}` | Control inference behavior |
 
-Wraps a component and gives it a `loading` prop. Options:
+### `InferOptions`
 
-- `skeleton?: SkeletonNode | SkeletonNode[]`
-- `infer?: boolean`
-- `cacheKey?: string`
-- `className?: string`
-- `animation?: 'shimmer' | 'pulse' | 'none'`
+Fine-tune the inference algorithm:
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `maxDepth` | `number` | `6` | Maximum JSX tree depth to traverse |
+| `maxNodes` | `number` | `120` | Maximum nodes to process |
+| `textLineHeight` | `string \| number` | `'0.95rem'` | Height for text line skeletons |
+
+### `withInstaSkeleton(Component, options)`
+
+HOC to create a skeleton-wrapped version of any component.
+
+```tsx
+const WrappedComponent = withInstaSkeleton(MyComponent, {
+  skeleton: [...],      // Manual schema
+  infer: false,         // Disable inference
+  cacheKey: 'my-comp',  // Cache key
+  className: 'custom',  // Root class
+  animation: 'pulse',   // Animation style
+});
+
+// Adds `loading` prop to the component
+<WrappedComponent loading={isLoading} {...props} />
+```
+
+### `clearInstaSkeletonCache(key?)`
+
+Clear cached schemas:
+
+```tsx
+import { clearInstaSkeletonCache } from 'instaskeleton';
+
+// Clear specific cache entry
+clearInstaSkeletonCache('product-card');
+
+// Clear all cached schemas
+clearInstaSkeletonCache();
+```
 
 ### `SkeletonNode`
 
 Supported node types:
 
-- `line`
-- `rect`
-- `circle`
-- `group`
+#### `line` — Text placeholder
+```tsx
+{ type: 'line', width: '80%', height: '1rem' }
+```
 
-Example:
+#### `rect` — Block placeholder (images, buttons, cards)
+```tsx
+{ type: 'rect', width: '100%', height: '8rem', radius: '1rem' }
+```
+
+#### `circle` — Avatar or icon placeholder
+```tsx
+{ type: 'circle', width: '3rem', height: '3rem' }
+```
+
+#### `group` — Container for nested nodes
+```tsx
+{
+  type: 'group',
+  gap: '0.75rem',
+  children: [
+    { type: 'circle', width: '3rem', height: '3rem' },
+    { type: 'line', width: '60%' },
+    { type: 'line', width: '40%' },
+  ]
+}
+```
+
+## Performance
+
+### Zero Work When Not Loading
 
 ```tsx
-const schema: SkeletonNode[] = [
-  {
-    type: 'group',
-    gap: '0.75rem',
-    children: [
-      { type: 'circle', width: '3rem', height: '3rem' },
-      { type: 'line', width: '48%' },
-      { type: 'line', width: '26%' }
-    ]
-  }
-];
+// When loading=false, InstaSkeleton returns children immediately
+// No inference, no schema processing, no DOM overhead
+if (!loading) return <>{children}</>;
 ```
+
+### LRU Cache with Size Limit
+
+Schemas are cached with a 100-entry limit to prevent memory leaks in long-running SPAs.
+
+### GPU-Accelerated Animations
+
+Shimmer animation uses `will-change: transform` for 60fps performance.
+
+### Reduced Motion Support
+
+Animations are disabled automatically when `prefers-reduced-motion: reduce` is set.
 
 ## Choosing The Right Mode
 
-- Use `infer` when you want minimal setup and a good structural approximation.
-- Use manual `schema` when visual fidelity matters.
-- Add `cacheKey` when the same inferred structure is rendered often.
-- Prefer shallow, reusable schemas for hot paths and long lists.
+| Use Case | Mode | Why |
+|----------|------|-----|
+| Quick prototyping | `infer` | Zero config, good approximation |
+| Production cards with specific layout | `schema` | Pixel-perfect control |
+| Reusable components | `withInstaSkeleton` | Consistent API, one config |
+| Lists with repeated items | `infer` + `cacheKey` | Cached after first render |
+| Complex nested structures | `infer` + `inferOptions` | Tune depth/node limits |
 
 ## Example App
 
-The local example app is the visual reference for the package. It covers:
+The local example app is a comprehensive visual reference covering:
 
-- profile rows, product cards, and pricing grids
-- feeds, file lists, and tables
-- settings forms with mixed controls
-- manual schema mirrors for inner component anatomy
-- HOC-based reusable loading wrappers
-- primitive node references and animation comparison
+- Profile cards, product grids, social feeds
+- Tables, file lists, pricing cards
+- Settings forms with mixed controls
+- Chat threads, deeply nested comment threads
+- Dashboard layouts with nested cards
+- E-commerce product detail pages
+- Multi-level navigation structures
+- Mixed media galleries
+- Complex forms with validation states
+- Manual schema mirrors showing exact structure
+- HOC usage patterns
+- All primitive node types
+- Animation comparison (shimmer, pulse, none)
 
 Run it from the repo root:
 
@@ -194,10 +275,21 @@ npm run example:dev
 ## Development
 
 ```bash
-npm run build
-npm run typecheck
-npm run example:build
+npm run build        # Build the library
+npm run typecheck    # Run TypeScript checks
+npm run dev          # Watch mode
+npm run example:dev  # Run example app
 ```
+
+## Browser Support
+
+- Chrome/Edge 88+
+- Firefox 78+
+- Safari 14+
+
+## License
+
+MIT © [LittleBoy9](https://github.com/LittleBoy9)
 
 ## Notes
 

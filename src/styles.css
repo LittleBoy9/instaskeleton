@@ -42,6 +42,7 @@
   transform: translateX(-100%);
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
   animation: is-shimmer 1.2s linear infinite;
+  will-change: transform;
 }
 
 .is-anim-pulse {

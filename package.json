@@ -3,7 +3,15 @@
   "version": "0.1.0",
   "description": "Ultra-light React skeleton generator with zero DOM scanning",
   "license": "MIT",
-  "author": "",
+  "author": "Sounak Das",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LittleBoy9/instaskeleton.git"
+  },
+  "bugs": {
+    "url": "https://github.com/LittleBoy9/instaskeleton/issues"
+  },
+  "homepage": "https://github.com/LittleBoy9/instaskeleton#readme",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

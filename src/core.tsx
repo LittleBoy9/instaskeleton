@@ -12,7 +12,16 @@ const DEFAULT_INFER: Required<InferOptions> = {
   textLineHeight: '0.95rem'
 };
 
+const CACHE_MAX_SIZE = 100;
 const schemaCache = new Map<string, SkeletonNode[]>();
+
+function setCacheWithLimit(key: string, value: SkeletonNode[]): void {
+  if (schemaCache.size >= CACHE_MAX_SIZE) {
+    const firstKey = schemaCache.keys().next().value;
+    if (firstKey) schemaCache.delete(firstKey);
+  }
+  schemaCache.set(key, value);
+}
 
 function normalizeSchema(schema?: SkeletonNode | SkeletonNode[]): SkeletonNode[] {
   if (!schema) return [];
@@ -45,18 +54,6 @@ function inferFromChildren(children: React.ReactNode, options?: InferOptions): S
     }
 
     nodeCount += 1;
-
-    // Try to unwrap function components by calling them to get their JSX
-    if (typeof node.type === 'function') {
-      try {
-        const rendered = (node.type as Function)(node.props);
-        if (isValidElement(rendered)) {
-          return walk(rendered, depth);
-        }
-      } catch {
-        // Component uses hooks/context — fall back to props.children
-      }
-    }
 
     const elType = typeof node.type === 'string' ? node.type : 'component';
 
@@ -95,7 +92,7 @@ function nodeStyle(node: SkeletonNode): React.CSSProperties {
   return style;
 }
 
-function NodeView({ node, animation }: { node: SkeletonNode; animation: InstaSkeletonProps['animation'] }) {
+const NodeView = memo(function NodeView({ node, animation }: { node: SkeletonNode; animation: InstaSkeletonProps['animation'] }) {
   if (node.type === 'group') {
     return (
       <div className="is-group" style={nodeStyle(node)}>
@@ -108,7 +105,7 @@ function NodeView({ node, animation }: { node: SkeletonNode; animation: InstaSke
 
   const animClass = animation === 'none' ? '' : ` is-anim-${animation}`;
   return <div className={`is-node is-${node.type}${animClass}`} style={nodeStyle(node)} aria-hidden="true" />;
-}
+});
 
 export const InstaSkeleton = memo(function InstaSkeleton({
   loading,
@@ -120,6 +117,9 @@ export const InstaSkeleton = memo(function InstaSkeleton({
   animation = 'shimmer',
   inferOptions
 }: InstaSkeletonProps) {
+  // Early exit: skip all inference work when not loading
+  if (!loading) return <>{children}</>;
+
   const skeletonSchema = useMemo(() => {
     const normalized = normalizeSchema(schema);
     if (normalized.length > 0) return normalized;
@@ -130,11 +130,9 @@ export const InstaSkeleton = memo(function InstaSkeleton({
     }
 
     const inferred = inferFromChildren(children, inferOptions);
-    if (cacheKey) schemaCache.set(cacheKey, inferred);
+    if (cacheKey) setCacheWithLimit(cacheKey, inferred);
     return inferred;
   }, [schema, infer, children, cacheKey, inferOptions]);
-
-  if (!loading) return <>{children}</>;
 
   return (
     <div className={['is-root', className].filter(Boolean).join(' ')} role="status" aria-live="polite" aria-busy="true">
