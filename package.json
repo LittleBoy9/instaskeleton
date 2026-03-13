@@ -1,9 +1,12 @@
 {
   "name": "instaskeleton",
   "version": "0.1.0",
-  "description": "Ultra-light React skeleton generator with zero DOM scanning",
+  "description": "Ultra-light React skeleton loader with zero DOM scanning. Automatic JSX inference, manual schema support, shimmer & pulse animations. Only ~1.65KB gzipped.",
   "license": "MIT",
-  "author": "Sounak Das",
+  "author": {
+    "name": "Sounak Das",
+    "url": "https://github.com/LittleBoy9"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/LittleBoy9/instaskeleton.git"
@@ -11,7 +14,11 @@
   "bugs": {
     "url": "https://github.com/LittleBoy9/instaskeleton/issues"
   },
-  "homepage": "https://github.com/LittleBoy9/instaskeleton#readme",
+  "homepage": "https://littleboy9.github.io/instaskeleton/",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/LittleBoy9"
+  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -40,10 +47,28 @@
   },
   "keywords": [
     "skeleton",
+    "skeleton-loader",
+    "skeleton-loading",
+    "skeleton-screen",
     "react",
+    "react-skeleton",
+    "react-loading",
+    "react-placeholder",
     "loading",
+    "loading-state",
+    "loading-indicator",
     "placeholder",
-    "ui"
+    "shimmer",
+    "shimmer-effect",
+    "pulse",
+    "animation",
+    "ui",
+    "component",
+    "typescript",
+    "zero-dom-scan",
+    "lightweight",
+    "performance",
+    "jsx-inference"
   ],
   "peerDependencies": {
     "react": ">=18"

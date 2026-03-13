@@ -1,28 +1,51 @@
 # instaskeleton
 
-[![npm version](https://img.shields.io/npm/v/instaskeleton.svg)](https://www.npmjs.com/package/instaskeleton)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/instaskeleton)](https://bundlephobia.com/package/instaskeleton)
-[![license](https://img.shields.io/npm/l/instaskeleton.svg)](https://github.com/LittleBoy9/instaskeleton/blob/main/LICENSE)
+> Ultra-light React skeleton loader with zero DOM scanning — the fastest way to add loading states to your React app
 
-Ultra-light React skeleton loader with **zero DOM scanning**, **zero layout measurement**, and **zero lag**.
+[![npm version](https://img.shields.io/npm/v/instaskeleton.svg?style=flat-square)](https://www.npmjs.com/package/instaskeleton)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/instaskeleton?style=flat-square)](https://bundlephobia.com/package/instaskeleton)
+[![npm downloads](https://img.shields.io/npm/dm/instaskeleton.svg?style=flat-square)](https://www.npmjs.com/package/instaskeleton)
+[![license](https://img.shields.io/npm/l/instaskeleton.svg?style=flat-square)](https://github.com/LittleBoy9/instaskeleton/blob/main/LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue?style=flat-square)](https://www.typescriptlang.org/)
+
+**instaskeleton** is the lightest React skeleton loading library that doesn't scan your DOM. Perfect for building fast, responsive loading states in React applications with shimmer animations, pulse effects, and automatic JSX inference.
 
 ```
-~1.2 KB gzipped (JS) + ~0.45 KB (CSS) = ~1.65 KB total
+~1.2 KB JS + ~0.45 KB CSS = ~1.65 KB gzipped (total)
 ```
+
+## Table of Contents
+
+- [Features](#why-instaskeleton)
+- [Installation](#install)
+- [Quick Start](#quick-start)
+- [Manual Schema](#manual-schema)
+- [HOC Pattern](#hoc-pattern)
+- [API Reference](#api-reference)
+- [Performance](#performance)
+- [Examples](#example-app)
+- [Browser Support](#browser-support)
+- [License](#license)
 
 ## Why instaskeleton?
 
-Most skeleton libraries either:
-- Require separate skeleton components for every UI element
-- Scan the DOM at runtime to generate placeholders (slow, causes layout shifts)
+**The problem with other React skeleton loaders:**
+- They require separate skeleton components for every UI element (tedious)
+- They scan the DOM at runtime to generate placeholders (slow, causes layout shifts)
+- They bloat your bundle with unnecessary dependencies
 
-**instaskeleton** takes a different approach:
-- **Zero DOM scanning** — no runtime layout measurement
-- **Zero work when not loading** — early exit skips all computation
-- **Infer from JSX** — automatic skeleton generation from your React tree
-- **Manual schema** — pixel-perfect control when you need it
-- **LRU cache** — repeated renders are instant (100-entry limit prevents memory leaks)
-- **Reduced motion support** — respects `prefers-reduced-motion`
+**instaskeleton solves this differently:**
+
+| Feature | Benefit |
+|---------|----------|
+| ⚡ **Zero DOM scanning** | No runtime layout measurement, no CLS issues |
+| 🚀 **Zero work when not loading** | Early exit skips all computation |
+| 🎯 **Automatic JSX inference** | Skeleton shapes generated from your React component tree |
+| 📐 **Manual schema mode** | Pixel-perfect control when you need exact layouts |
+| 💾 **Smart LRU caching** | Repeated renders are instant (100-entry limit) |
+| 🎨 **Multiple animations** | Shimmer, pulse, or none — GPU accelerated |
+| ♿ **Accessibility first** | Respects `prefers-reduced-motion` automatically |
+| 📦 **Tiny bundle** | Only ~1.65KB gzipped total |
 
 ## Install
 
@@ -287,9 +310,17 @@ npm run example:dev  # Run example app
 - Firefox 78+
 - Safari 14+
 
+## Keywords
+
+react skeleton, skeleton loader, react loading, loading placeholder, shimmer animation, react placeholder, skeleton screen, loading state, react ui components, typescript skeleton, lightweight skeleton loader, zero dom scanning, jsx inference
+
 ## License
 
 MIT © [LittleBoy9](https://github.com/LittleBoy9)
+
+---
+
+**Found this useful?** Give it a ⭐ on [GitHub](https://github.com/LittleBoy9/instaskeleton)!
 
 ## Notes
 
