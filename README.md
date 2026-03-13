@@ -23,7 +23,6 @@
 - [HOC Pattern](#hoc-pattern)
 - [API Reference](#api-reference)
 - [Performance](#performance)
-- [Examples](#example-app)
 - [Browser Support](#browser-support)
 - [License](#license)
 
@@ -270,38 +269,12 @@ Animations are disabled automatically when `prefers-reduced-motion: reduce` is s
 | Lists with repeated items | `infer` + `cacheKey` | Cached after first render |
 | Complex nested structures | `infer` + `inferOptions` | Tune depth/node limits |
 
-## Example App
-
-The local example app is a comprehensive visual reference covering:
-
-- Profile cards, product grids, social feeds
-- Tables, file lists, pricing cards
-- Settings forms with mixed controls
-- Chat threads, deeply nested comment threads
-- Dashboard layouts with nested cards
-- E-commerce product detail pages
-- Multi-level navigation structures
-- Mixed media galleries
-- Complex forms with validation states
-- Manual schema mirrors showing exact structure
-- HOC usage patterns
-- All primitive node types
-- Animation comparison (shimmer, pulse, none)
-
-Run it from the repo root:
-
-```bash
-npm run example:install
-npm run example:dev
-```
-
 ## Development
 
 ```bash
 npm run build        # Build the library
 npm run typecheck    # Run TypeScript checks
 npm run dev          # Watch mode
-npm run example:dev  # Run example app
 ```
 
 ## Browser Support
