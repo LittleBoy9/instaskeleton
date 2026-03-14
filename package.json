@@ -1,6 +1,6 @@
 {
   "name": "instaskeleton",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Ultra-light React skeleton loader with zero DOM scanning. Automatic JSX inference, manual schema support, shimmer & pulse animations. Only ~1.65KB gzipped.",
   "license": "MIT",
   "author": {
