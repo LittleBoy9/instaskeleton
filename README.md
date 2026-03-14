@@ -8,6 +8,8 @@
 [![license](https://img.shields.io/npm/l/instaskeleton.svg?style=flat-square)](https://github.com/LittleBoy9/instaskeleton/blob/main/LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue?style=flat-square)](https://www.typescriptlang.org/)
 
+# **[Live Demo](https://insta-skeleton-example.vercel.app/)** 🚀
+
 **instaskeleton** is the lightest React skeleton loading library that doesn't scan your DOM. Perfect for building fast, responsive loading states in React applications with shimmer animations, pulse effects, and automatic JSX inference.
 
 ```
@@ -16,6 +18,7 @@
 
 ## Table of Contents
 
+- [Live Demo](https://insta-skeleton-example.vercel.app/)
 - [Features](#why-instaskeleton)
 - [Installation](#install)
 - [Quick Start](#quick-start)

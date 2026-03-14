@@ -13,7 +13,7 @@
     "@heroui/theme": "^2.4.26",
     "autoprefixer": "^10.4.27",
     "framer-motion": "^12.35.2",
-    "instaskeleton": "file:..",
+    "instaskeleton": "^0.1.3",
     "postcss": "^8.5.8",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
