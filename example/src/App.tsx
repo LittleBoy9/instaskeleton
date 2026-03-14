@@ -37,20 +37,49 @@ const mockPosts = [
   { id: 2, author: 'Alex', content: 'Inference from JSX is perfect for feeds. Manual schema for exact layouts.', likes: 18, time: '5h' },
 ];
 
-// Demo Section Component with individual loading toggle
+const mockTableRows = [
+  { id: 'INV-001', customer: 'Acme Corp', amount: '$2,400.00', status: 'Paid', date: 'Mar 12' },
+  { id: 'INV-002', customer: 'Globex Inc', amount: '$1,850.00', status: 'Pending', date: 'Mar 11' },
+  { id: 'INV-003', customer: 'Initech', amount: '$3,200.00', status: 'Paid', date: 'Mar 10' },
+  { id: 'INV-004', customer: 'Umbrella Ltd', amount: '$960.00', status: 'Overdue', date: 'Mar 08' },
+];
+
+const mockArticles = [
+  {
+    id: 1,
+    title: 'Building Performant Skeleton Loaders',
+    excerpt: 'Why zero-DOM-scan matters for bundle size and runtime performance in modern React apps.',
+    author: 'Sounak Das',
+    readTime: '5 min',
+    tag: 'Performance',
+  },
+  {
+    id: 2,
+    title: 'Manual Schema vs Inference',
+    excerpt: 'When to use heuristic inference and when to reach for manual skeleton schemas.',
+    author: 'Ava Smith',
+    readTime: '3 min',
+    tag: 'Guide',
+  },
+];
+
+// Demo Section Component with individual loading toggle and code preview
 function DemoSection({
   title,
   description,
   mode,
+  code,
   children,
 }: {
   title: string;
   description: string;
   mode: string;
+  code: string;
   children: (loading: boolean, animation: 'shimmer' | 'pulse' | 'none') => React.ReactNode;
 }) {
   const [loading, setLoading] = useState(true);
   const [animation, setAnimation] = useState<'shimmer' | 'pulse' | 'none'>('shimmer');
+  const [showCode, setShowCode] = useState(false);
 
   return (
     <Card className="overflow-hidden border border-default-200 bg-white shadow-sm">
@@ -83,18 +112,37 @@ function DemoSection({
           </Button>
         </div>
       </CardHeader>
-      <CardBody className="grid gap-6 p-6 lg:grid-cols-2">
-        <div className="rounded-xl border-2 border-dashed border-primary-200 bg-primary-50/30 p-4">
-          <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-primary-600">Skeleton State</p>
-          {children(true, animation)}
-        </div>
-        <div className="rounded-xl border-2 border-dashed border-success-200 bg-success-50/30 p-4">
-          <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-success-600">Loaded Content</p>
-          {children(false, animation)}
+      <CardBody className="p-6">
+        <div className={`rounded-xl border-2 border-dashed p-4 ${loading ? 'border-primary-200 bg-primary-50/30' : 'border-success-200 bg-success-50/30'}`}>
+          <p className={`mb-4 text-xs font-semibold uppercase tracking-widest ${loading ? 'text-primary-600' : 'text-success-600'}`}>
+            {loading ? 'Skeleton State' : 'Loaded Content'}
+          </p>
+          {children(loading, animation)}
         </div>
       </CardBody>
-      <div className="border-t border-default-100 bg-default-50/30 px-6 py-3">
-        <p className="text-xs text-default-400">Toggle <b>Loading/Loaded</b> button to see the live transition</p>
+      <div className="border-t border-default-100">
+        <button
+          onClick={() => setShowCode(!showCode)}
+          className="flex w-full items-center justify-between px-6 py-3 text-left text-xs font-medium text-default-500 transition-colors hover:bg-default-50"
+        >
+          <span>{showCode ? 'Hide Code' : 'View Code'}</span>
+          <svg
+            className={`h-4 w-4 transition-transform ${showCode ? 'rotate-180' : ''}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {showCode && (
+          <div className="border-t border-default-100 bg-[#1e1e1e] px-6 py-4">
+            <pre className="overflow-x-auto text-[13px] leading-relaxed">
+              <code className="text-[#d4d4d4]">{code}</code>
+            </pre>
+          </div>
+        )}
       </div>
     </Card>
   );
@@ -150,7 +198,7 @@ function SocialPost({ post }: { post: (typeof mockPosts)[0] }) {
         <p className="text-default-700">{post.content}</p>
       </CardBody>
       <CardFooter className="gap-3">
-        <Button size="sm" variant="light">♥ {post.likes}</Button>
+        <Button size="sm" variant="light">&#9829; {post.likes}</Button>
         <Button size="sm" variant="light">Reply</Button>
       </CardFooter>
     </Card>
@@ -194,7 +242,7 @@ function PricingCard({ name, price, features }: { name: string; price: string; f
         <ul className="space-y-2">
           {features.map((f) => (
             <li key={f} className="flex items-center gap-2 text-sm">
-              <span className="text-success">✓</span>
+              <span className="text-success">&#10003;</span>
               {f}
             </li>
           ))}
@@ -204,6 +252,64 @@ function PricingCard({ name, price, features }: { name: string; price: string; f
         <Button fullWidth color="primary" variant="flat">Choose</Button>
       </CardFooter>
     </Card>
+  );
+}
+
+function ArticleCard({ article }: { article: (typeof mockArticles)[0] }) {
+  return (
+    <Card>
+      <CardHeader className="flex-col items-start gap-1 pb-0">
+        <Chip size="sm" variant="flat" color="secondary">{article.tag}</Chip>
+        <h4 className="text-base font-bold">{article.title}</h4>
+      </CardHeader>
+      <CardBody className="py-2">
+        <p className="text-sm text-default-600">{article.excerpt}</p>
+      </CardBody>
+      <CardFooter className="justify-between">
+        <div className="flex items-center gap-2">
+          <Avatar name={article.author} size="sm" />
+          <span className="text-xs text-default-500">{article.author}</span>
+        </div>
+        <span className="text-xs text-default-400">{article.readTime} read</span>
+      </CardFooter>
+    </Card>
+  );
+}
+
+function DataTable({ rows }: { rows: typeof mockTableRows }) {
+  return (
+    <div className="overflow-x-auto rounded-lg border border-default-200">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-default-200 bg-default-50">
+            <th className="px-4 py-3 text-left font-semibold text-default-700">Invoice</th>
+            <th className="px-4 py-3 text-left font-semibold text-default-700">Customer</th>
+            <th className="px-4 py-3 text-left font-semibold text-default-700">Amount</th>
+            <th className="px-4 py-3 text-left font-semibold text-default-700">Status</th>
+            <th className="px-4 py-3 text-left font-semibold text-default-700">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.id} className="border-b border-default-100 last:border-0">
+              <td className="px-4 py-3 font-mono text-xs">{row.id}</td>
+              <td className="px-4 py-3">{row.customer}</td>
+              <td className="px-4 py-3 font-semibold">{row.amount}</td>
+              <td className="px-4 py-3">
+                <Chip
+                  size="sm"
+                  variant="flat"
+                  color={row.status === 'Paid' ? 'success' : row.status === 'Pending' ? 'warning' : 'danger'}
+                >
+                  {row.status}
+                </Chip>
+              </td>
+              <td className="px-4 py-3 text-default-500">{row.date}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -240,28 +346,139 @@ function SettingsForm() {
 }
 
 // Schemas for manual mode
+
+// Profile: avatar circle | name + role lines | status chip rect
+const profileCardSchema: SkeletonNode = {
+  type: 'group', direction: 'row', gap: '1rem', align: 'center', children: [
+    { type: 'circle', width: '2.5rem', height: '2.5rem' },
+    { type: 'group', gap: '0.25rem', children: [
+      { type: 'line', width: '8rem', height: '0.9rem' },
+      { type: 'line', width: '6rem', height: '0.75rem' },
+    ]},
+    { type: 'rect', width: '3.5rem', height: '1.5rem', radius: '999px' },
+  ],
+};
+const profileSchema: SkeletonNode[] = [profileCardSchema, profileCardSchema, profileCardSchema];
+
+// Product: title + chip row, price + stock row, progress bar
+const productCardSchema: SkeletonNode = {
+  type: 'group', gap: '0.75rem', children: [
+    { type: 'group', direction: 'row', gap: '0.5rem', align: 'center', children: [
+      { type: 'line', width: '60%', height: '1rem' },
+      { type: 'rect', width: '4rem', height: '1.25rem', radius: '999px' },
+    ]},
+    { type: 'group', direction: 'row', gap: '0.5rem', align: 'center', children: [
+      { type: 'line', width: '30%', height: '1.5rem' },
+      { type: 'line', width: '25%' },
+    ]},
+    { type: 'rect', height: '0.5rem', radius: '999px' },
+  ],
+};
+const productSchema: SkeletonNode[] = [productCardSchema, productCardSchema];
+
+// Social post: avatar + name row, content lines, action buttons row
+const socialPostSchema: SkeletonNode = {
+  type: 'group', gap: '0.75rem', children: [
+    { type: 'group', direction: 'row', gap: '0.75rem', align: 'center', children: [
+      { type: 'circle', width: '2rem', height: '2rem' },
+      { type: 'group', gap: '0.2rem', children: [
+        { type: 'line', width: '5rem', height: '0.8rem' },
+        { type: 'line', width: '2rem', height: '0.6rem' },
+      ]},
+    ]},
+    { type: 'group', gap: '0.3rem', children: [
+      { type: 'line', width: '100%' },
+      { type: 'line', width: '80%' },
+    ]},
+    { type: 'group', direction: 'row', gap: '0.75rem', children: [
+      { type: 'rect', width: '4rem', height: '2rem', radius: '0.5rem' },
+      { type: 'rect', width: '3.5rem', height: '2rem', radius: '0.5rem' },
+    ]},
+  ],
+};
+const socialSchema: SkeletonNode[] = [socialPostSchema, socialPostSchema];
+
+// Chat: horizontal rows with avatar + bubble, alternating sides
 const chatSchema: SkeletonNode[] = [
-  { type: 'group', gap: '0.75rem', children: [{ type: 'circle', width: '2rem', height: '2rem' }, { type: 'rect', width: '65%', height: '2.5rem', radius: '1rem' }] },
-  { type: 'group', gap: '0.75rem', children: [{ type: 'rect', width: '50%', height: '2rem', radius: '1rem' }, { type: 'circle', width: '2rem', height: '2rem' }] },
-  { type: 'group', gap: '0.75rem', children: [{ type: 'circle', width: '2rem', height: '2rem' }, { type: 'rect', width: '75%', height: '3rem', radius: '1rem' }] },
+  { type: 'group', direction: 'row', gap: '0.75rem', align: 'center', children: [
+    { type: 'circle', width: '2rem', height: '2rem' },
+    { type: 'rect', width: '65%', height: '2.5rem', radius: '1rem' },
+  ]},
+  { type: 'group', direction: 'row', gap: '0.75rem', align: 'center', children: [
+    { type: 'rect', width: '50%', height: '2rem', radius: '1rem' },
+    { type: 'circle', width: '2rem', height: '2rem' },
+  ]},
+  { type: 'group', direction: 'row', gap: '0.75rem', align: 'center', children: [
+    { type: 'circle', width: '2rem', height: '2rem' },
+    { type: 'rect', width: '75%', height: '3rem', radius: '1rem' },
+  ]},
 ];
 
-const pricingSchema: SkeletonNode[] = [
-  { type: 'line', width: '40%', height: '1.2rem' },
-  { type: 'line', width: '50%', height: '2rem' },
-  { type: 'line', width: '30%' },
-  { type: 'group', gap: '0.5rem', children: [{ type: 'line', width: '80%' }, { type: 'line', width: '70%' }, { type: 'line', width: '85%' }] },
-  { type: 'rect', height: '2.5rem', radius: '0.75rem' },
-];
+// Pricing: two card columns
+const singlePricingCard: SkeletonNode = {
+  type: 'group', gap: '0.75rem', children: [
+    { type: 'line', width: '40%', height: '1.2rem' },
+    { type: 'line', width: '50%', height: '2rem' },
+    { type: 'line', width: '30%' },
+    { type: 'group', gap: '0.5rem', children: [
+      { type: 'line', width: '80%' },
+      { type: 'line', width: '70%' },
+      { type: 'line', width: '85%' },
+    ]},
+    { type: 'rect', height: '2.5rem', radius: '0.75rem' },
+  ],
+};
+const pricingSchema: SkeletonNode[] = [singlePricingCard, singlePricingCard];
 
+// Settings: team avatars, inputs, textarea, toggles, slider, progress
 const settingsSchema: SkeletonNode[] = [
-  { type: 'group', gap: '0.75rem', children: [{ type: 'circle', width: '2.5rem', height: '2.5rem' }, { type: 'group', gap: '0.25rem', children: [{ type: 'line', width: '40%' }, { type: 'line', width: '25%' }] }] },
-  { type: 'group', gap: '0.75rem', children: [{ type: 'rect', height: '3rem', radius: '0.75rem' }, { type: 'rect', height: '3rem', radius: '0.75rem' }] },
+  { type: 'group', direction: 'row', gap: '0.75rem', align: 'center', children: [
+    { type: 'circle', width: '2.5rem', height: '2.5rem' },
+    { type: 'group', gap: '0.25rem', children: [
+      { type: 'line', width: '40%' },
+      { type: 'line', width: '25%' },
+    ]},
+  ]},
+  { type: 'group', direction: 'row', gap: '0.75rem', children: [
+    { type: 'rect', height: '3rem', radius: '0.75rem' },
+    { type: 'rect', height: '3rem', radius: '0.75rem' },
+  ]},
   { type: 'rect', height: '5rem', radius: '0.75rem' },
-  { type: 'group', gap: '1rem', children: [{ type: 'rect', width: '6rem', height: '1.5rem', radius: '999px' }, { type: 'rect', width: '5rem', height: '1.5rem', radius: '999px' }] },
+  { type: 'group', direction: 'row', gap: '1rem', children: [
+    { type: 'rect', width: '6rem', height: '1.5rem', radius: '999px' },
+    { type: 'rect', width: '5rem', height: '1.5rem', radius: '999px' },
+  ]},
   { type: 'rect', height: '1.5rem', radius: '0.5rem' },
   { type: 'rect', height: '0.75rem', radius: '999px' },
 ];
+
+// Data table: header + rows
+const tableSchema: SkeletonNode[] = [
+  { type: 'rect', height: '2.5rem', radius: '0.5rem' },
+  { type: 'group', gap: '0.25rem', children: [
+    { type: 'rect', height: '2.75rem', radius: '0' },
+    { type: 'rect', height: '2.75rem', radius: '0' },
+    { type: 'rect', height: '2.75rem', radius: '0' },
+    { type: 'rect', height: '2.75rem', radius: '0' },
+  ]},
+];
+
+// Article: two card columns
+const singleArticleCard: SkeletonNode = {
+  type: 'group', gap: '0.75rem', children: [
+    { type: 'rect', width: '4rem', height: '1.25rem', radius: '999px' },
+    { type: 'line', width: '85%', height: '1.1rem' },
+    { type: 'group', gap: '0.25rem', children: [
+      { type: 'line', width: '100%' },
+      { type: 'line', width: '70%' },
+    ]},
+    { type: 'group', direction: 'row', gap: '0.5rem', align: 'center', children: [
+      { type: 'circle', width: '2rem', height: '2rem' },
+      { type: 'line', width: '30%' },
+    ]},
+  ],
+};
+const articleSchema: SkeletonNode[] = [singleArticleCard, singleArticleCard];
 
 // HOC Example
 const StatWithSkeleton = withInstaSkeleton(StatCard, {
@@ -294,10 +511,31 @@ export default function App() {
 
       {/* Demo Sections */}
       <div className="mx-auto max-w-6xl space-y-8 px-4 py-12">
-        {/* Profile Cards - infer mode */}
-        <DemoSection title="Profile Cards" description="Team member cards with avatar, name, role, and status chip" mode="infer">
+        {/* Profile Cards - manual schema */}
+        <DemoSection
+          title="Profile Cards"
+          description="Team member cards with avatar, name, role, and status chip"
+          mode="manual schema"
+          code={`const schema: SkeletonNode[] = [
+  {
+    type: 'group', direction: 'row', gap: '1rem', align: 'center',
+    children: [
+      { type: 'circle', width: '2.5rem', height: '2.5rem' },
+      { type: 'group', gap: '0.25rem', children: [
+        { type: 'line', width: '8rem', height: '0.9rem' },
+        { type: 'line', width: '6rem', height: '0.75rem' },
+      ]},
+      { type: 'rect', width: '3.5rem', height: '1.5rem', radius: '999px' },
+    ],
+  },
+];
+
+<InstaSkeleton loading={loading} schema={schema} animation="shimmer">
+  <ProfileCard user={user} />
+</InstaSkeleton>`}
+        >
           {(loading, animation) => (
-            <InstaSkeleton loading={loading} infer cacheKey="profiles" animation={animation}>
+            <InstaSkeleton loading={loading} schema={profileSchema} infer={false} animation={animation}>
               <div className="grid gap-3">
                 {mockUsers.map((u) => <ProfileCard key={u.id} user={u} />)}
               </div>
@@ -305,10 +543,35 @@ export default function App() {
           )}
         </DemoSection>
 
-        {/* Products - infer mode */}
-        <DemoSection title="Product Grid" description="E-commerce cards with price and stock indicator" mode="infer">
+        {/* Products - manual schema */}
+        <DemoSection
+          title="Product Grid"
+          description="E-commerce cards with price and stock indicator"
+          mode="manual schema"
+          code={`const schema: SkeletonNode[] = [
+  {
+    type: 'group', gap: '0.75rem', children: [
+      { type: 'group', direction: 'row', gap: '0.5rem', align: 'center',
+        children: [
+          { type: 'line', width: '60%', height: '1rem' },
+          { type: 'rect', width: '4rem', height: '1.25rem', radius: '999px' },
+        ]},
+      { type: 'group', direction: 'row', gap: '0.5rem', align: 'center',
+        children: [
+          { type: 'line', width: '30%', height: '1.5rem' },
+          { type: 'line', width: '25%' },
+        ]},
+      { type: 'rect', height: '0.5rem', radius: '999px' },
+    ],
+  },
+];
+
+<InstaSkeleton loading={loading} schema={schema} animation="shimmer">
+  <ProductCard product={product} />
+</InstaSkeleton>`}
+        >
           {(loading, animation) => (
-            <InstaSkeleton loading={loading} infer cacheKey="products" animation={animation}>
+            <InstaSkeleton loading={loading} schema={productSchema} infer={false} animation={animation}>
               <div className="grid gap-3">
                 {mockProducts.map((p) => <ProductCard key={p.id} product={p} />)}
               </div>
@@ -316,10 +579,40 @@ export default function App() {
           )}
         </DemoSection>
 
-        {/* Social Feed - infer mode */}
-        <DemoSection title="Social Feed" description="Social posts with author, content, and action buttons" mode="infer">
+        {/* Social Feed - manual schema */}
+        <DemoSection
+          title="Social Feed"
+          description="Social posts with author, content, and action buttons"
+          mode="manual schema"
+          code={`const schema: SkeletonNode[] = [
+  {
+    type: 'group', gap: '0.75rem', children: [
+      { type: 'group', direction: 'row', gap: '0.75rem', align: 'center',
+        children: [
+          { type: 'circle', width: '2rem', height: '2rem' },
+          { type: 'group', gap: '0.2rem', children: [
+            { type: 'line', width: '5rem', height: '0.8rem' },
+            { type: 'line', width: '2rem', height: '0.6rem' },
+          ]},
+        ]},
+      { type: 'group', gap: '0.3rem', children: [
+        { type: 'line', width: '100%' },
+        { type: 'line', width: '80%' },
+      ]},
+      { type: 'group', direction: 'row', gap: '0.75rem', children: [
+        { type: 'rect', width: '4rem', height: '2rem', radius: '0.5rem' },
+        { type: 'rect', width: '3.5rem', height: '2rem', radius: '0.5rem' },
+      ]},
+    ],
+  },
+];
+
+<InstaSkeleton loading={loading} schema={schema} animation="shimmer">
+  <SocialPost post={post} />
+</InstaSkeleton>`}
+        >
           {(loading, animation) => (
-            <InstaSkeleton loading={loading} infer cacheKey="social" animation={animation}>
+            <InstaSkeleton loading={loading} schema={socialSchema} infer={false} animation={animation}>
               <div className="grid gap-3">
                 {mockPosts.map((p) => <SocialPost key={p.id} post={p} />)}
               </div>
@@ -327,8 +620,90 @@ export default function App() {
           )}
         </DemoSection>
 
+        {/* Article / Media Cards - manual schema */}
+        <DemoSection
+          title="Article Cards"
+          description="Blog-style cards with tag, title, excerpt, and author"
+          mode="manual schema"
+          code={`const schema: SkeletonNode[] = [
+  {
+    type: 'group', gap: '0.75rem', children: [
+      { type: 'rect', width: '4rem', height: '1.25rem', radius: '999px' },
+      { type: 'line', width: '85%', height: '1.1rem' },
+      { type: 'group', gap: '0.25rem', children: [
+        { type: 'line', width: '100%' },
+        { type: 'line', width: '70%' },
+      ]},
+      { type: 'group', direction: 'row', gap: '0.5rem', align: 'center',
+        children: [
+          { type: 'circle', width: '2rem', height: '2rem' },
+          { type: 'line', width: '30%' },
+        ]},
+    ],
+  },
+];
+
+<InstaSkeleton loading={loading} schema={schema} animation="shimmer">
+  <ArticleCard article={article} />
+</InstaSkeleton>`}
+        >
+          {(loading, animation) => (
+            <InstaSkeleton loading={loading} schema={articleSchema} infer={false} animation={animation} className="grid! grid-cols-2! gap-4!">
+              <div className="grid gap-4 sm:grid-cols-2">
+                {mockArticles.map((a) => <ArticleCard key={a.id} article={a} />)}
+              </div>
+            </InstaSkeleton>
+          )}
+        </DemoSection>
+
+        {/* Data Table - manual schema */}
+        <DemoSection
+          title="Data Table"
+          description="Tabular invoice data with status chips and amounts"
+          mode="manual schema"
+          code={`const schema: SkeletonNode[] = [
+  { type: 'rect', height: '2.5rem', radius: '0.5rem' },
+  { type: 'group', gap: '0.25rem', children: [
+    { type: 'rect', height: '2.75rem', radius: '0' },
+    { type: 'rect', height: '2.75rem', radius: '0' },
+    { type: 'rect', height: '2.75rem', radius: '0' },
+    { type: 'rect', height: '2.75rem', radius: '0' },
+  ]},
+];
+
+<InstaSkeleton loading={loading} schema={schema} animation="shimmer">
+  <DataTable rows={rows} />
+</InstaSkeleton>`}
+        >
+          {(loading, animation) => (
+            <InstaSkeleton loading={loading} schema={tableSchema} infer={false} animation={animation}>
+              <DataTable rows={mockTableRows} />
+            </InstaSkeleton>
+          )}
+        </DemoSection>
+
         {/* Chat - manual schema */}
-        <DemoSection title="Chat Thread" description="Conversation with alternating message bubbles" mode="manual schema">
+        <DemoSection
+          title="Chat Thread"
+          description="Conversation with alternating message bubbles"
+          mode="manual schema"
+          code={`const schema: SkeletonNode[] = [
+  { type: 'group', direction: 'row', gap: '0.75rem', align: 'center',
+    children: [
+      { type: 'circle', width: '2rem', height: '2rem' },
+      { type: 'rect', width: '65%', height: '2.5rem', radius: '1rem' },
+    ]},
+  { type: 'group', direction: 'row', gap: '0.75rem', align: 'center',
+    children: [
+      { type: 'rect', width: '50%', height: '2rem', radius: '1rem' },
+      { type: 'circle', width: '2rem', height: '2rem' },
+    ]},
+];
+
+<InstaSkeleton loading={loading} schema={schema} animation="shimmer">
+  <ChatThread messages={messages} />
+</InstaSkeleton>`}
+        >
           {(loading, animation) => (
             <InstaSkeleton loading={loading} schema={chatSchema} infer={false} animation={animation}>
               <div className="flex flex-col gap-4">
@@ -341,9 +716,35 @@ export default function App() {
         </DemoSection>
 
         {/* Pricing - manual schema */}
-        <DemoSection title="Pricing Cards" description="Pricing tiers with features and CTA button" mode="manual schema">
+        <DemoSection
+          title="Pricing Cards"
+          description="Pricing tiers with features and CTA button"
+          mode="manual schema"
+          code={`const cardSchema: SkeletonNode = {
+  type: 'group', gap: '0.75rem', children: [
+    { type: 'line', width: '40%', height: '1.2rem' },
+    { type: 'line', width: '50%', height: '2rem' },
+    { type: 'line', width: '30%' },
+    { type: 'group', gap: '0.5rem', children: [
+      { type: 'line', width: '80%' },
+      { type: 'line', width: '70%' },
+      { type: 'line', width: '85%' },
+    ]},
+    { type: 'rect', height: '2.5rem', radius: '0.75rem' },
+  ],
+};
+
+<InstaSkeleton
+  loading={loading}
+  schema={[cardSchema, cardSchema]}
+  className="grid grid-cols-2 gap-4"
+  animation="shimmer"
+>
+  <PricingGrid />
+</InstaSkeleton>`}
+        >
           {(loading, animation) => (
-            <InstaSkeleton loading={loading} schema={pricingSchema} infer={false} animation={animation}>
+            <InstaSkeleton loading={loading} schema={pricingSchema} infer={false} animation={animation} className="grid! grid-cols-2! gap-4!">
               <div className="grid gap-4 sm:grid-cols-2">
                 <PricingCard name="Starter" price="$0" features={['1 project', 'Community support']} />
                 <PricingCard name="Pro" price="$19" features={['Unlimited projects', 'Priority support', 'Analytics']} />
@@ -353,7 +754,30 @@ export default function App() {
         </DemoSection>
 
         {/* Settings - manual schema */}
-        <DemoSection title="Settings Panel" description="Complex form with inputs, toggles, sliders" mode="manual schema">
+        <DemoSection
+          title="Settings Panel"
+          description="Complex form with inputs, toggles, sliders"
+          mode="manual schema"
+          code={`const schema: SkeletonNode[] = [
+  { type: 'group', direction: 'row', gap: '0.75rem', align: 'center',
+    children: [
+      { type: 'circle', width: '2.5rem', height: '2.5rem' },
+      { type: 'group', gap: '0.25rem', children: [
+        { type: 'line', width: '40%' },
+        { type: 'line', width: '25%' },
+      ]},
+    ]},
+  { type: 'group', direction: 'row', gap: '0.75rem', children: [
+    { type: 'rect', height: '3rem', radius: '0.75rem' },
+    { type: 'rect', height: '3rem', radius: '0.75rem' },
+  ]},
+  { type: 'rect', height: '5rem', radius: '0.75rem' },
+];
+
+<InstaSkeleton loading={loading} schema={schema} animation="shimmer">
+  <SettingsForm />
+</InstaSkeleton>`}
+        >
           {(loading, animation) => (
             <InstaSkeleton loading={loading} schema={settingsSchema} infer={false} animation={animation}>
               <SettingsForm />
@@ -362,8 +786,28 @@ export default function App() {
         </DemoSection>
 
         {/* HOC Example */}
-        <DemoSection title="Dashboard Stats (HOC)" description="Using withInstaSkeleton for reusable wrappers" mode="withInstaSkeleton">
-          {(loading) => (
+        <DemoSection
+          title="Dashboard Stats (HOC)"
+          description="Using withInstaSkeleton for reusable wrappers"
+          mode="withInstaSkeleton"
+          code={`import { withInstaSkeleton } from 'instaskeleton';
+
+const StatWithSkeleton = withInstaSkeleton(StatCard, {
+  skeleton: [
+    { type: 'line', width: '40%' },
+    { type: 'group', gap: '0.5rem', children: [
+      { type: 'line', width: '60%', height: '1.75rem' },
+      { type: 'line', width: '20%' },
+    ]},
+  ],
+  infer: false,
+  cacheKey: 'stat-card',
+});
+
+// Usage — just pass loading prop
+<StatWithSkeleton loading={loading} label="Downloads" value="12.4k" change="+23%" />`}
+        >
+          {(loading, animation) => (
             <div className="grid gap-4 sm:grid-cols-3">
               <StatWithSkeleton loading={loading} label="Downloads" value="12.4k" change="+23%" />
               <StatWithSkeleton loading={loading} label="Stars" value="847" change="+12%" />
@@ -373,7 +817,21 @@ export default function App() {
         </DemoSection>
 
         {/* Nested Comments */}
-        <DemoSection title="Nested Comments" description="Testing inference on deeply nested content" mode="infer + inferOptions">
+        <DemoSection
+          title="Nested Comments"
+          description="Testing inference on deeply nested content"
+          mode="infer + inferOptions"
+          code={`// Inference mode — no schema needed, just wrap your JSX
+<InstaSkeleton
+  loading={loading}
+  infer
+  cacheKey="nested"
+  animation="shimmer"
+  inferOptions={{ maxDepth: 8 }}
+>
+  <CommentThread comments={comments} />
+</InstaSkeleton>`}
+        >
           {(loading, animation) => (
             <InstaSkeleton loading={loading} infer cacheKey="nested" animation={animation} inferOptions={{ maxDepth: 8 }}>
               <div className="rounded-xl border border-default-200 p-4">
@@ -450,7 +908,7 @@ export default function App() {
             <a href="https://github.com/LittleBoy9" className="font-medium text-primary hover:underline" target="_blank" rel="noreferrer">
               LittleBoy9
             </a>{' '}
-            • MIT License • ~1.65 KB gzipped
+            &bull; MIT License &bull; ~1.65 KB gzipped
           </p>
         </footer>
       </div>

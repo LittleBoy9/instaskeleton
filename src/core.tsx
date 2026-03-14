@@ -28,10 +28,6 @@ function normalizeSchema(schema?: SkeletonNode | SkeletonNode[]): SkeletonNode[]
   return Array.isArray(schema) ? schema : [schema];
 }
 
-function resolveDimension(value: string | number | undefined, fallback: string | number): string | number {
-  return value ?? fallback;
-}
-
 function inferFromChildren(children: React.ReactNode, options?: InferOptions): SkeletonNode[] {
   const merged = { ...DEFAULT_INFER, ...options };
   let nodeCount = 0;
@@ -84,10 +80,12 @@ function inferFromChildren(children: React.ReactNode, options?: InferOptions): S
 function nodeStyle(node: SkeletonNode): React.CSSProperties {
   const style: React.CSSProperties = {};
 
-  if (node.width !== undefined) style.width = resolveDimension(node.width, '');
-  if (node.height !== undefined) style.height = resolveDimension(node.height, '');
-  if (node.radius !== undefined) style.borderRadius = resolveDimension(node.radius, '');
-  if (node.gap !== undefined) style.gap = resolveDimension(node.gap, '');
+  if (node.width !== undefined) style.width = node.width;
+  if (node.height !== undefined) style.height = node.height;
+  if (node.radius !== undefined) style.borderRadius = node.radius;
+  if (node.gap !== undefined) style.gap = node.gap;
+  if (node.direction !== undefined) style.flexDirection = node.direction;
+  if (node.align !== undefined) style.alignItems = node.align;
 
   return style;
 }
@@ -95,7 +93,7 @@ function nodeStyle(node: SkeletonNode): React.CSSProperties {
 const NodeView = memo(function NodeView({ node, animation }: { node: SkeletonNode; animation: InstaSkeletonProps['animation'] }) {
   if (node.type === 'group') {
     return (
-      <div className="is-group" style={nodeStyle(node)}>
+      <div className="isk-group" style={nodeStyle(node)}>
         {(node.children ?? []).map((child, index) => (
           <NodeView key={index} node={child} animation={animation} />
         ))}
@@ -103,8 +101,8 @@ const NodeView = memo(function NodeView({ node, animation }: { node: SkeletonNod
     );
   }
 
-  const animClass = animation === 'none' ? '' : ` is-anim-${animation}`;
-  return <div className={`is-node is-${node.type}${animClass}`} style={nodeStyle(node)} aria-hidden="true" />;
+  const animClass = animation === 'none' ? '' : ` isk-anim-${animation}`;
+  return <div className={`isk-node isk-${node.type}${animClass}`} style={nodeStyle(node)} aria-hidden="true" />;
 });
 
 export const InstaSkeleton = memo(function InstaSkeleton({
@@ -117,10 +115,9 @@ export const InstaSkeleton = memo(function InstaSkeleton({
   animation = 'shimmer',
   inferOptions
 }: InstaSkeletonProps) {
-  // Early exit: skip all inference work when not loading
-  if (!loading) return <>{children}</>;
-
   const skeletonSchema = useMemo(() => {
+    if (!loading) return [];
+
     const normalized = normalizeSchema(schema);
     if (normalized.length > 0) return normalized;
     if (!infer) return [];
@@ -132,10 +129,12 @@ export const InstaSkeleton = memo(function InstaSkeleton({
     const inferred = inferFromChildren(children, inferOptions);
     if (cacheKey) setCacheWithLimit(cacheKey, inferred);
     return inferred;
-  }, [schema, infer, children, cacheKey, inferOptions]);
+  }, [loading, schema, infer, children, cacheKey, inferOptions]);
+
+  if (!loading) return <>{children}</>;
 
   return (
-    <div className={['is-root', className].filter(Boolean).join(' ')} role="status" aria-live="polite" aria-busy="true">
+    <div className={['isk-root', className].filter(Boolean).join(' ')} role="status" aria-live="polite" aria-busy="true">
       {skeletonSchema.length > 0 ? (
         skeletonSchema.map((node, index) => <NodeView key={index} node={node} animation={animation} />)
       ) : (

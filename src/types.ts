@@ -8,6 +8,8 @@ export interface SkeletonNode {
   height?: string | number;
   radius?: string | number;
   gap?: string | number;
+  direction?: 'row' | 'column';
+  align?: 'start' | 'center' | 'end' | 'stretch';
   children?: SkeletonNode[];
 }
 
